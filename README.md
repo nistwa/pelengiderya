@@ -1,2 +1,0 @@
-#PALENG-İ DERYA
-
