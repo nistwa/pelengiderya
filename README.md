@@ -1,2 +1,2 @@
-# kurs
-deneme
+#PALENG-İ DERYA
+
