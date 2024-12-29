@@ -1,2 +1,2 @@
-# deneme
-isim bulamayan takım ortak çalışma deneme
+# kurs
+deneme
