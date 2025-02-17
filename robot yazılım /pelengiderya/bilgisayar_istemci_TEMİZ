@@ -1,0 +1,27 @@
+import socket
+
+JETSON_IP = "192.168.1.34"  # Jetson Nano'nun modemden aldığı IP'yi buraya yaz!
+PORT = 5353  # Server ile aynı portu kullanmalıyız
+
+# TCP soketi oluştur
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+try:
+    client_socket.connect((JETSON_IP, PORT))  # Jetson'a bağlan
+    print(f"Connected to Jetson Nano at {JETSON_IP}:{PORT}")
+
+    while True:
+        message = input("Enter message to send: ")  # Kullanıcıdan mesaj al
+        if message.lower() == "exit":
+            break  # Çıkış yapmak için
+
+        client_socket.sendall((message + "\n").encode())  # Veriyi gönder
+        response = client_socket.recv(1024).decode("utf-8").strip()  # Sunucudan yanıt al
+        print(f"Jetson's Response: {response}")
+
+except Exception as e:
+    print(f"Connection error: {e}")
+
+finally:
+    client_socket.close()
+    print("Client socket closed.")
