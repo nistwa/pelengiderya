@@ -1,0 +1,36 @@
+import socket
+
+# Jetson'un IP'sini belirleme (Tüm IP'lerden bağlantı kabul edecek)
+HOST = "0.0.0.0"  # Bu, cihazın aldığı tüm IP adreslerini dinler
+PORT = 12345  # İletişim için kullanılacak port
+
+# TCP soketini oluştur
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind((HOST, PORT))  # IP ve portu bağla
+server_socket.listen(1)  # 1 istemciyi kabul et
+
+print(f"Server is listening on {HOST}:{PORT}")
+
+conn, addr = server_socket.accept()  # Bağlantıyı kabul et
+print(f"Connected by {addr}")
+
+try:
+    while True:
+        data = conn.recv(1024).decode("utf-8").strip()  # 1024 byte veri oku
+        if not data:
+            break  # Veri gelmezse çık
+        print(f"Received: {data}")  # Gelen veriyi yazdır
+
+        # Arduino'ya UART ile gönderilecekmiş gibi simüle et (UART kodu entegre edilebilir)
+        # serial_port.write((data + "\n").encode()) 
+
+        # Yanıt gönderme (istemciye onay mesajı)
+        conn.sendall("Message received\n".encode())
+
+except KeyboardInterrupt:
+    print("\nServer shutting down")
+
+finally:
+    conn.close()
+    server_socket.close()
+    print("Server socket closed.")
