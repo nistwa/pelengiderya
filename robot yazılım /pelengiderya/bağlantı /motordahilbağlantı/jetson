@@ -1,0 +1,50 @@
+import socket
+import serial
+
+# Arduino'nun bağlı olduğu portu belirle (Jetson'da `ls /dev/ttyUSB*` ile kontrol et)
+arduino_port = "/dev/ttyUSB0"
+arduino_baudrate = 115200
+
+# Arduino ile bağlantıyı aç
+try:
+    arduino = serial.Serial(arduino_port, arduino_baudrate, timeout=1)
+    print(f"Arduino bağlı: {arduino_port}")
+except Exception as e:
+    print(f"Arduino bağlantı hatası: {e}")
+    exit()
+
+# Jetson Sunucu Ayarları
+JETSON_IP = "0.0.0.0"  # Tüm bağlantılara izin verir
+PORT = 5322            # İstemci bu porta bağlanacak
+
+# TCP Sunucu başlat
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Port kullanım hatasını önler
+server_socket.bind((JETSON_IP, PORT))
+server_socket.listen(5)
+
+print(f"Jetson Sunucu başlatıldı: {JETSON_IP}:{PORT}")
+print("Bağlantı bekleniyor...")
+
+client_socket, addr = server_socket.accept()
+print(f"Bağlantı alındı: {addr}")
+
+try:
+    while True:
+        data = client_socket.recv(1024).decode("utf-8").strip()
+        if not data:
+            break
+
+        print(f"Gelen Veri: {data}")
+
+        # Gelen veriyi Arduino'ya USB üzerinden gönder
+        arduino.write((data + "\n").encode())
+
+except Exception as e:
+    print(f"Hata: {e}")
+
+finally:
+    client_socket.close()
+    server_socket.close()
+    arduino.close()
+    print("Bağlantılar kapatıldı.")
