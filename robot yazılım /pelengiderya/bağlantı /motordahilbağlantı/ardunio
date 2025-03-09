@@ -1,0 +1,44 @@
+#include <Servo.h>
+
+// Motor sürücü pinleri (PWM çıkışları)
+#define MOTOR_A_PWM 5
+#define MOTOR_B_PWM 6
+
+// Servo motorlar
+Servo servo1, servo2, servo3, servo4;
+
+void setup() {
+    Serial.begin(115200);
+
+    // Motor pinlerini çıkış olarak ayarla
+    pinMode(MOTOR_A_PWM, OUTPUT);
+    pinMode(MOTOR_B_PWM, OUTPUT);
+
+    // Servo motorları bağla
+    servo1.attach(9);
+    servo2.attach(10);
+    servo3.attach(11);
+    servo4.attach(12);
+}
+
+void loop() {
+    if (Serial.available() > 0) {
+        String data = Serial.readStringUntil('\n');  // Veriyi oku
+        int motor_x, motor_y, servo_x, servo_y;
+       
+        // Gelen veriyi ayrıştır
+        sscanf(data.c_str(), "%d,%d,%d,%d", &motor_x, &motor_y, &servo_x, &servo_y);
+
+        // Motorları kontrol et (PWM çıkışı)
+        analogWrite(MOTOR_A_PWM, abs(motor_x));
+        analogWrite(MOTOR_B_PWM, abs(motor_y));
+
+        // Servo motorları kontrol et
+        servo1.write(servo_x);
+        servo2.write(servo_x);
+        servo3.write(servo_y);
+        servo4.write(servo_y);
+
+        Serial.println("Veri alındı ve uygulandı.");
+    }
+}
