@@ -1,0 +1,47 @@
+import pygame
+import socket
+import time
+
+JETSON_IP = "192.168.1.34"  # Jetson Nano'nun IP adresi (modemde aldığı IP'yi kontrol et)
+PORT = 5322  # Jetson Sunucu Portu
+
+# TCP istemciyi başlat
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect((JETSON_IP, PORT))
+
+print(f"Jetson'a bağlandı: {JETSON_IP}:{PORT}")
+
+# Joystick başlat
+pygame.init()
+joystick = pygame.joystick.Joystick(0)
+joystick.init()
+print(f"Joystick Bağlı: {joystick.get_name()}")
+
+try:
+    while True:
+        pygame.event.pump()
+        x_axis = joystick.get_axis(0)  # X ekseni (Sağa-Sola)
+        y_axis = joystick.get_axis(1)  # Y ekseni (İleri-Geri)
+
+        # Değerleri 0 - 180 arasına dönüştür (Servo motorlar için)
+        servo_x = int(90 + (x_axis * 90))
+        servo_y = int(90 + (y_axis * 90))
+
+        # Motor PWM için -255 ile 255 arasında ölçekle
+        motor_x = int(x_axis * 255)
+        motor_y = int(y_axis * 255)
+
+        # Veriyi formatla ve Jetson’a gönder
+        message = f"{motor_x},{motor_y},{servo_x},{servo_y}\n"
+        client_socket.sendall(message.encode())
+
+        print(f"Gönderildi: {message}")
+
+        time.sleep(0.05)
+
+except KeyboardInterrupt:
+    print("Çıkış yapılıyor...")
+
+finally:
+    client_socket.close()
+    print("Bağlantı kapatıldı.")
